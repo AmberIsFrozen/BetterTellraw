@@ -14,7 +14,7 @@ public class BetterTellraw implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("[BetterTellraw] BetterTellraw Loaded!");
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            BtellrawCommand.register(dispatcher);
+            BtellrawCommand.register(dispatcher, registryAccess);
         });
         Config.load();
     }
