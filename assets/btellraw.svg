@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   id="svg1"
+   inkscape:export-filename="bitmap.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   sodipodi:docname="btellraw.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#111111"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.0318224"
+     inkscape:cx="76.563567"
+     inkscape:cy="144.88928"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer4" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#1f1b1b;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers;fill-opacity:1"
+       id="rect1"
+       width="135.46666"
+       height="135.46666"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <path
+       style="fill:#302f2f;fill-opacity:1;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
+       d="M 67.73333,67.73333 66.690673,178.11595 -42.467859,134.67242 Z"
+       id="path1"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:#302f2f;fill-opacity:1;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
+       d="m 67.73333,67.73333 -0.01568,-99.799288 120.8002,30.2143647 z"
+       id="path1-5"
+       sodipodi:nodetypes="cccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Layer 3" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Layer 4">
+    <text
+       xml:space="preserve"
+       style="font-size:30.9709px;line-height:0.9;font-family:'Noto Sans CJK TC';-inkscape-font-specification:'Noto Sans CJK TC';text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ffd500;fill-opacity:1;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
+       x="67.731865"
+       y="59.98801"
+       id="text2"><tspan
+         sodipodi:role="line"
+         id="tspan2"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30.9709px;line-height:0.9;font-family:Minecraft;-inkscape-font-specification:Minecraft;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ffd500;fill-opacity:1;stroke-width:10.5833"
+         x="67.731865"
+         y="59.98801">Better</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30.9709px;line-height:0.9;font-family:Minecraft;-inkscape-font-specification:Minecraft;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ffd500;fill-opacity:1;stroke-width:10.5833"
+         x="67.731865"
+         y="90.339493"
+         id="tspan3">Tellraw</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:28.6814px;line-height:0.9;font-family:'Noto Sans CJK TC';-inkscape-font-specification:'Noto Sans CJK TC';text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ffd500;fill-opacity:1;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
+       x="68.723808"
+       y="123.91965"
+       id="text2-9"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:28.6814px;line-height:0.9;font-family:Minecraft;-inkscape-font-specification:Minecraft;text-align:center;letter-spacing:0px;text-anchor:middle;fill:#ffd500;fill-opacity:1;stroke-width:10.5833"
+         x="68.723808"
+         y="123.91965"
+         id="tspan3-2">&gt;_</tspan></text>
+  </g>
+</svg>
