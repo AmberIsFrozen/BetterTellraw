@@ -9,12 +9,10 @@
     "LX86"
   ],
   "contact": {
-    "sources": "https://github.com/Kenny-Hui/Better-Tellraw"
+    "sources": "https://github.com/Kenny-Hui/BetterTellraw"
   },
-
   "license": "MIT",
   "icon": "assets/btellraw/icon.png",
-
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -23,9 +21,8 @@
   },
   "mixins": [
   ],
-
   "depends": {
     "fabric-api": "*",
-    "minecraft": ">=1.20.5"
+    "minecraft": ">=1.21.3"
   }
 }
