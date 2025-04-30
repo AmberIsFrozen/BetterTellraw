@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BetterTellraw implements ModInitializer {
-    public static final Logger LOGGER = LoggerFactory.getLogger("btellraw");
+    public static final Logger LOGGER = LoggerFactory.getLogger("BetterTellraw");
 
     @Override
     public void onInitialize() {

@@ -31,7 +31,7 @@ public class Config {
             loadedTellraw += readTellraws(file.toPath());
         }
 
-        BetterTellraw.LOGGER.info("[BetterTellraw] " + loadedTellraw + " tellraws Loaded");
+        BetterTellraw.LOGGER.info("[BetterTellraw] {} tellraws Loaded", loadedTellraw);
         return loadedTellraw;
     }
 
@@ -45,8 +45,7 @@ public class Config {
         try {
             Files.write(TELLRAWS_DIR.toPath().resolve("example.json"), Collections.singleton(new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(jsonConfig)));
         } catch (Exception e) {
-            e.printStackTrace();
-            BetterTellraw.LOGGER.warn("[BetterTellraw] Unable to generate config file!");
+            BetterTellraw.LOGGER.error("[BetterTellraw] Unable to generate config file!", e);
         }
     }
 
@@ -65,8 +64,7 @@ public class Config {
             try {
                 Files.write(TELLRAWS_DIR.toPath().resolve(config.getKey() + ".json"), Collections.singleton(new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(config.getValue())));
             } catch (Exception e) {
-                e.printStackTrace();
-                BetterTellraw.LOGGER.warn("[BetterTellraw] Unable to generate Config File!");
+                BetterTellraw.LOGGER.error("[BetterTellraw] Unable to generate Config File!", e);
             }
         }
     }
@@ -86,8 +84,7 @@ public class Config {
             }
             return loadedTellraw;
         } catch (Exception e) {
-            e.printStackTrace();
-            BetterTellraw.LOGGER.error("Failed to load tellraw file " + tellrawLocation.getFileName().toString());
+            BetterTellraw.LOGGER.error("Failed to load tellraw file {}", tellrawLocation.getFileName().toString(), e);
             return 0;
         }
     }

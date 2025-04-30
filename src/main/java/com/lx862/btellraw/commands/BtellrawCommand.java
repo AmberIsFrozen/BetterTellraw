@@ -32,6 +32,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Box;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -184,7 +185,7 @@ public final class BtellrawCommand {
 
     public static int about(CommandContext<ServerCommandSource> context) {
         context.getSource().sendFeedback(() -> Text.literal("Better Tellraw - Enhanced tellraw command and managed tellraw storage").formatted(Formatting.GOLD), false);
-        context.getSource().sendFeedback(() -> Text.literal("https://modrinth.com/mod/bettertellraw").formatted(Formatting.GREEN).formatted(Formatting.UNDERLINE).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://modrinth.com/mod/bettertellraw"))), false);
+        context.getSource().sendFeedback(() -> Text.literal("https://modrinth.com/mod/bettertellraw").formatted(Formatting.GREEN).formatted(Formatting.UNDERLINE).styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/bettertellraw")))), false);
         return 1;
     }
 
@@ -224,8 +225,8 @@ public final class BtellrawCommand {
             MutableText finalText = Text.literal(order + id);
             finalText.formatted(Formatting.YELLOW);
             finalText.styled(style -> {
-                style = style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/btellraw preview \"" + id + "\""));
-                style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Click to preview " + id).formatted(Formatting.GOLD)));
+                style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw preview \"" + id + "\""));
+                style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to preview " + id).formatted(Formatting.GOLD)));
                 return style;
             });
 
@@ -240,13 +241,13 @@ public final class BtellrawCommand {
         MutableText pageText = Text.literal(" [ Page " + (ordinalPage) + "/" + pages + " ] ").formatted(Formatting.GOLD);
 
         leftArrow.styled(style -> {
-            style = style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/btellraw list " + (ordinalPage - 1)));
-            style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Previous page").formatted(Formatting.YELLOW)));
+            style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw list " + (ordinalPage - 1)));
+            style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Previous page").formatted(Formatting.YELLOW)));
             return style;
         });
         rightArrow.styled(style -> {
-            style = style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/btellraw list " + (ordinalPage + 1)));
-            style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Next page").formatted(Formatting.YELLOW)));
+            style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw list " + (ordinalPage + 1)));
+            style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Next page").formatted(Formatting.YELLOW)));
             return style;
         });
 
