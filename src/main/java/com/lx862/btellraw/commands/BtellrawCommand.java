@@ -1,5 +1,6 @@
 package com.lx862.btellraw.commands;
 
+import com.google.gson.JsonParseException;
 import com.lx862.btellraw.config.Config;
 import com.lx862.btellraw.data.TellrawEntry;
 import com.mojang.brigadier.CommandDispatcher;
@@ -297,14 +298,14 @@ public final class BtellrawCommand {
             formattedString = tellrawMsg;
         }
 
-        Text tellrawComponent;
+        Text tellrawText;
         try {
-            tellrawComponent = Text.Serialization.fromJson(formattedString, context.getSource().getRegistryManager());
-        } catch (Exception ignored) {
-            tellrawComponent = TagParser.QUICK_TEXT_WITH_STF.parseText(formattedString, ParserContext.of());
+            tellrawText = Text.Serialization.fromJson(formattedString, context.getSource().getRegistryManager());
+        } catch (JsonParseException ignored) {
+            tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseText(formattedString, ParserContext.of());
         }
 
-        return sendTellraw(playerList, tellrawComponent, context);
+        return sendTellraw(playerList, tellrawText, context);
     }
 
     public static int sendTellraw(Text msg, CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
