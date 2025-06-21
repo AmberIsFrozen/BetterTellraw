@@ -1,6 +1,8 @@
 package com.lx862.btellraw.commands;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.lx862.btellraw.config.Config;
 import com.lx862.btellraw.data.TellrawEntry;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,10 +13,12 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.Placeholders;
 import eu.pb4.placeholders.api.parsers.TagParser;
+import io.netty.handler.codec.DecoderException;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
@@ -26,10 +30,7 @@ import net.minecraft.command.argument.TextArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Box;
 
@@ -300,8 +301,9 @@ public final class BtellrawCommand {
 
         Text tellrawText;
         try {
-            tellrawText = Text.Serialization.fromJson(formattedString, context.getSource().getRegistryManager());
-        } catch (JsonParseException ignored) {
+            JsonElement jsonElement = JsonParser.parseString(formattedString);
+            tellrawText = TextCodecs.CODEC.parse(JsonOps.INSTANCE, jsonElement).resultOrPartial().orElseThrow();
+        } catch (JsonParseException | DecoderException ignored) {
             tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseText(formattedString, ParserContext.of());
         }
 
@@ -333,7 +335,7 @@ public final class BtellrawCommand {
             Config.tellraws.put(fullID, tellrawObj);
             Config.saveConfig();
         } else {
-            TellrawEntry tellrawObj = new TellrawEntry(StringArgumentType.getString(context, "fileName"), Text.Serialization.toJsonString(TextArgumentType.getTextArgument(context, "JSONText"), context.getSource().getRegistryManager()), fullID, ID);
+            TellrawEntry tellrawObj = new TellrawEntry(StringArgumentType.getString(context, "fileName"), TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, TextArgumentType.getTextArgument(context, "JSONText")).getOrThrow().toString(), fullID, ID);
             Config.tellraws.put(fullID, tellrawObj);
             Config.saveConfig();
         }
@@ -354,7 +356,7 @@ public final class BtellrawCommand {
         if(type instanceof StringArgumentType) {
             content = StringArgumentType.getString(context, "text");
         } else {
-            content = Text.Serialization.toJsonString(TextArgumentType.getTextArgument(context, "JSONText"), context.getSource().getRegistryManager());
+            content = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, TextArgumentType.getTextArgument(context, "JSONText")).getOrThrow().toString();
         }
 
         Config.tellraws.put(ID, new TellrawEntry(oldEntry.fileName(), content, oldEntry.fullID(), oldEntry.id()));
