@@ -27,6 +27,7 @@ import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.command.argument.TextArgumentType;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,44 +44,44 @@ public final class BtellrawCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
         LiteralCommandNode<ServerCommandSource> tellrawNode = CommandManager
                 .literal("btellraw")
-                .requires(Permissions.require("btw.main", 0))
+                .requires(Permissions.require("btw.main", PermissionLevel.ALL))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> reloadNode = CommandManager
                 .literal("reload")
-                .requires(Permissions.require("btw.reload", 2))
+                .requires(Permissions.require("btw.reload", PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::reloadConfig)
                 .build();
 
         LiteralCommandNode<ServerCommandSource> sendNode = CommandManager
                 .literal("send")
-                .requires(Permissions.require("btw.send", 2))
+                .requires(Permissions.require("btw.send", PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> addNode = CommandManager
                 .literal("add")
-                .requires(Permissions.require("btw.add", 2))
+                .requires(Permissions.require("btw.add", PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> modifyNode = CommandManager
                 .literal("modify")
-                .requires(Permissions.require("btw.modify", 2))
+                .requires(Permissions.require("btw.modify", PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> previewNode = CommandManager
                 .literal("preview")
-                .requires(Permissions.require("btw.preview", 2))
+                .requires(Permissions.require("btw.preview", PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<ServerCommandSource> listNode = CommandManager
                 .literal("list")
-                .requires(Permissions.require("btw.list", 2))
+                .requires(Permissions.require("btw.list", PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::listTellraws)
                 .build();
 
         LiteralCommandNode<ServerCommandSource> aboutNode = CommandManager
                 .literal("about")
-                .requires(Permissions.require("btw.about", 0))
+                .requires(Permissions.require("btw.about", PermissionLevel.ALL))
                 .executes(BtellrawCommand::about)
                 .build();
 
@@ -97,20 +98,20 @@ public final class BtellrawCommand {
                 .build();
 
         ArgumentCommandNode<ServerCommandSource, String> addTellrawNode = CommandManager
-                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(t -> t.fileName()).toList(), SuggestionBuilder))
+                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
                 .then(CommandManager.argument("id", StringArgumentType.string())
                         .then(CommandManager.argument("text", StringArgumentType.string())
                         .executes(ctx -> addTellraw(ctx, StringArgumentType.string()))))
                 .build();
 
         ArgumentCommandNode<ServerCommandSource, String> modifyTellrawNode = CommandManager
-                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(t -> t.fullID()).toList(), SuggestionBuilder))
+                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
                         .then(CommandManager.argument("text", StringArgumentType.string())
                                 .executes(ctx -> modifyTellraw(ctx, StringArgumentType.string())))
                 .build();
 
         ArgumentCommandNode<ServerCommandSource, String> modifyTellrawTextNode = CommandManager
-                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(t -> t.fullID()).toList(), SuggestionBuilder))
+                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
                         .then(CommandManager.argument("JSONText", TextArgumentType.text(registryAccess))
                                 .executes(ctx -> modifyTellraw(ctx, TextArgumentType.text(registryAccess))))
                 .build();
@@ -121,7 +122,7 @@ public final class BtellrawCommand {
                 .build();
 
         ArgumentCommandNode<ServerCommandSource, String> addTellrawTextNode = CommandManager
-                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(t -> t.fileName()).toList(), SuggestionBuilder))
+                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
                         .then(CommandManager.argument("id", StringArgumentType.string())
                                 .then(CommandManager.argument("JSONText", TextArgumentType.text(registryAccess))
                                 .executes(ctx -> addTellraw(ctx, TextArgumentType.text(registryAccess)))))
@@ -322,7 +323,7 @@ public final class BtellrawCommand {
         return sendTellraw(playerList, msg, context);
     }
 
-    public static int addTellraw(CommandContext<ServerCommandSource> context, ArgumentType type) {
+    public static int addTellraw(CommandContext<ServerCommandSource> context, ArgumentType<?> type) {
         String ID = StringArgumentType.getString(context, "id");
         String fullID = StringArgumentType.getString(context, "fileName") + "." + StringArgumentType.getString(context, "id");
         if(Config.tellraws.get(fullID) != null) {
@@ -343,7 +344,7 @@ public final class BtellrawCommand {
         return 1;
     }
 
-    public static int modifyTellraw(CommandContext<ServerCommandSource> context, ArgumentType type) {
+    public static int modifyTellraw(CommandContext<ServerCommandSource> context, ArgumentType<?> type) {
         String ID = StringArgumentType.getString(context, "id");
         TellrawEntry oldEntry = Config.tellraws.get(ID);
 

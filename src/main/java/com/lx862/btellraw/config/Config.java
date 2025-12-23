@@ -36,13 +36,12 @@ public class Config {
     }
 
     public static void generateConfig() {
-        TELLRAWS_DIR.mkdirs();
         final JsonObject jsonConfig = new JsonObject();
-
         jsonConfig.addProperty("example1", "{\"text\": \"This is a default tellraw written in Minecraft's Raw JSON Text.\", \"color\": \"gold\"}");
         jsonConfig.addProperty("example2", "<yellow>This is a default tellraw written with <click type:open_url value:'https://placeholders.pb4.eu/user/quicktext/'><hover type:show_text value:'Hover Text'><u>Placeholder's API QuickText Format</u></hover></click>");
         jsonConfig.addProperty("placeholder", "<aqua>Try running the following command:\n/btellraw send entity @s example.placeholder \"3 Minutes,Maintenance\"\n\n<green>This server will restart in %s due to %s.");
         try {
+            Files.createDirectories(TELLRAWS_DIR.toPath());
             Files.write(TELLRAWS_DIR.toPath().resolve("example.json"), Collections.singleton(new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(jsonConfig)));
         } catch (Exception e) {
             BetterTellraw.LOGGER.error("[BetterTellraw] Unable to generate config file!", e);
@@ -64,7 +63,7 @@ public class Config {
             try {
                 Files.write(TELLRAWS_DIR.toPath().resolve(config.getKey() + ".json"), Collections.singleton(new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(config.getValue())));
             } catch (Exception e) {
-                BetterTellraw.LOGGER.error("[BetterTellraw] Unable to generate Config File!", e);
+                BetterTellraw.LOGGER.error("[BetterTellraw] Unable to generate config file!", e);
             }
         }
     }
