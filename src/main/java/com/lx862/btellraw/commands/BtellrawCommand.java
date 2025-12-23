@@ -20,134 +20,137 @@ import eu.pb4.placeholders.api.Placeholders;
 import eu.pb4.placeholders.api.parsers.TagParser;
 import io.netty.handler.codec.DecoderException;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.PosArgument;
-import net.minecraft.command.argument.TextArgumentType;
-import net.minecraft.command.permission.PermissionLevel;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Box;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.arguments.coordinates.Coordinates;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionLevel;
+import net.minecraft.world.phys.AABB;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 
 public final class BtellrawCommand {
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        LiteralCommandNode<ServerCommandSource> tellrawNode = CommandManager
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
+        LiteralCommandNode<CommandSourceStack> tellrawNode = Commands
                 .literal("btellraw")
                 .requires(Permissions.require("btw.main", PermissionLevel.ALL))
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> reloadNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> reloadNode = Commands
                 .literal("reload")
                 .requires(Permissions.require("btw.reload", PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::reloadConfig)
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> sendNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> sendNode = Commands
                 .literal("send")
                 .requires(Permissions.require("btw.send", PermissionLevel.GAMEMASTERS))
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> addNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> addNode = Commands
                 .literal("add")
                 .requires(Permissions.require("btw.add", PermissionLevel.GAMEMASTERS))
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> modifyNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> modifyNode = Commands
                 .literal("modify")
                 .requires(Permissions.require("btw.modify", PermissionLevel.GAMEMASTERS))
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> previewNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> previewNode = Commands
                 .literal("preview")
                 .requires(Permissions.require("btw.preview", PermissionLevel.GAMEMASTERS))
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> listNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> listNode = Commands
                 .literal("list")
                 .requires(Permissions.require("btw.list", PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::listTellraws)
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> aboutNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> aboutNode = Commands
                 .literal("about")
                 .requires(Permissions.require("btw.about", PermissionLevel.ALL))
                 .executes(BtellrawCommand::about)
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> selectorNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> selectorNode = Commands
                 .literal("entity")
                 .build();
 
-        LiteralCommandNode<ServerCommandSource> posNode = CommandManager
+        LiteralCommandNode<CommandSourceStack> posNode = Commands
                 .literal("pos")
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, EntitySelector> entitiesNode = CommandManager
-                .argument("players", EntityArgumentType.players())
+        ArgumentCommandNode<CommandSourceStack, EntitySelector> entitiesNode = Commands
+                .argument("players", EntityArgument.players())
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> addTellrawNode = CommandManager
-                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
-                .then(CommandManager.argument("id", StringArgumentType.string())
-                        .then(CommandManager.argument("text", StringArgumentType.string())
+        ArgumentCommandNode<CommandSourceStack, String> addTellrawNode = Commands
+                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
+                .then(Commands.argument("id", StringArgumentType.string())
+                        .then(Commands.argument("text", StringArgumentType.string())
                         .executes(ctx -> addTellraw(ctx, StringArgumentType.string()))))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> modifyTellrawNode = CommandManager
-                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
-                        .then(CommandManager.argument("text", StringArgumentType.string())
+        ArgumentCommandNode<CommandSourceStack, String> modifyTellrawNode = Commands
+                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
+                        .then(Commands.argument("text", StringArgumentType.string())
                                 .executes(ctx -> modifyTellraw(ctx, StringArgumentType.string())))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> modifyTellrawTextNode = CommandManager
-                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
-                        .then(CommandManager.argument("JSONText", TextArgumentType.text(registryAccess))
-                                .executes(ctx -> modifyTellraw(ctx, TextArgumentType.text(registryAccess))))
+        ArgumentCommandNode<CommandSourceStack, String> modifyTellrawTextNode = Commands
+                .argument("id", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.values().stream().map(TellrawEntry::fullID).toList(), SuggestionBuilder))
+                        .then(Commands.argument("JSONText", ComponentArgument.textComponent(registryAccess))
+                                .executes(ctx -> modifyTellraw(ctx, ComponentArgument.textComponent(registryAccess))))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, Integer> pageNode = CommandManager
+        ArgumentCommandNode<CommandSourceStack, Integer> pageNode = Commands
                 .argument("page", IntegerArgumentType.integer(1))
                 .executes(BtellrawCommand::listTellraws)
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> addTellrawTextNode = CommandManager
-                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> CommandSource.suggestMatching(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
-                        .then(CommandManager.argument("id", StringArgumentType.string())
-                                .then(CommandManager.argument("JSONText", TextArgumentType.text(registryAccess))
-                                .executes(ctx -> addTellraw(ctx, TextArgumentType.text(registryAccess)))))
+        ArgumentCommandNode<CommandSourceStack, String> addTellrawTextNode = Commands
+                .argument("fileName", StringArgumentType.string()).suggests((commandContext, SuggestionBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.values().stream().map(TellrawEntry::fileName).toList(), SuggestionBuilder))
+                        .then(Commands.argument("id", StringArgumentType.string())
+                                .then(Commands.argument("JSONText", ComponentArgument.textComponent(registryAccess))
+                                .executes(ctx -> addTellraw(ctx, ComponentArgument.textComponent(registryAccess)))))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, PosArgument> pos1Node = CommandManager
-                .argument("pos1", BlockPosArgumentType.blockPos())
+        ArgumentCommandNode<CommandSourceStack, Coordinates> pos1Node = Commands
+                .argument("pos1", BlockPosArgument.blockPos())
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, PosArgument> pos2Node = CommandManager
-                .argument("pos2", BlockPosArgumentType.blockPos())
+        ArgumentCommandNode<CommandSourceStack, Coordinates> pos2Node = Commands
+                .argument("pos2", BlockPosArgument.blockPos())
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> tellrawID = CommandManager
+        ArgumentCommandNode<CommandSourceStack, String> tellrawID = Commands
                 .argument("tellrawID", StringArgumentType.string())
                 .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, new String[]{}))
-                .suggests((commandContext, suggestionsBuilder) -> CommandSource.suggestMatching(Config.tellraws.keySet(), suggestionsBuilder))
+                .suggests((commandContext, suggestionsBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.keySet(), suggestionsBuilder))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, Text> JSONTextNode = CommandManager
-                .argument("Text", TextArgumentType.text(registryAccess))
-                .executes(context -> sendTellraw(TextArgumentType.getTextArgument(context, "Text"), context))
+        ArgumentCommandNode<CommandSourceStack, Component> JSONTextNode = Commands
+                .argument("Text", ComponentArgument.textComponent(registryAccess))
+                .executes(context -> sendTellraw(ComponentArgument.getRawComponent(context, "Text"), context))
                 .build();
 
-        ArgumentCommandNode<ServerCommandSource, String> placeholderNode = CommandManager
+        ArgumentCommandNode<CommandSourceStack, String> placeholderNode = Commands
                 .argument("placeholders", StringArgumentType.string())
                 .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, StringArgumentType.getString(context, "placeholders").split(",")))
                 .build();
@@ -180,19 +183,19 @@ public final class BtellrawCommand {
             listNode.addChild(pageNode);
     }
 
-    public static int reloadConfig(CommandContext<ServerCommandSource> context) {
+    public static int reloadConfig(CommandContext<CommandSourceStack> context) {
         int tellrawLoaded = Config.load();
-        context.getSource().sendFeedback(() -> Text.literal("Config reloaded. " + tellrawLoaded + " tellraws loaded.").formatted(Formatting.GREEN), false);
+        context.getSource().sendSuccess(() -> Component.literal("Config reloaded. " + tellrawLoaded + " tellraws loaded.").withStyle(ChatFormatting.GREEN), false);
         return 1;
     }
 
-    public static int about(CommandContext<ServerCommandSource> context) {
-        context.getSource().sendFeedback(() -> Text.literal("Better Tellraw - Enhanced tellraw command and managed tellraw storage").formatted(Formatting.GOLD), false);
-        context.getSource().sendFeedback(() -> Text.literal("https://modrinth.com/mod/bettertellraw").formatted(Formatting.GREEN).formatted(Formatting.UNDERLINE).styled(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/bettertellraw")))), false);
+    public static int about(CommandContext<CommandSourceStack> context) {
+        context.getSource().sendSuccess(() -> Component.literal("Better Tellraw - Enhanced tellraw command and managed tellraw storage").withStyle(ChatFormatting.GOLD), false);
+        context.getSource().sendSuccess(() -> Component.literal("https://modrinth.com/mod/bettertellraw").withStyle(ChatFormatting.GREEN).withStyle(ChatFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/bettertellraw")))), false);
         return 1;
     }
 
-    public static int listTellraws(CommandContext<ServerCommandSource> context) {
+    public static int listTellraws(CommandContext<CommandSourceStack> context) {
         int tellrawPerPage = 8;
         int pages = (int)Math.ceil(Config.tellraws.size() / (double)tellrawPerPage);
         int page = 0;
@@ -202,7 +205,7 @@ public final class BtellrawCommand {
             int selectedPage = IntegerArgumentType.getInteger(context, "page")-1;
 
             if(selectedPage > pages-1) {
-                context.getSource().sendFeedback(() -> Text.literal("Page " + (selectedPage+1) + " does not exists.").formatted(Formatting.RED), false);
+                context.getSource().sendSuccess(() -> Component.literal("Page " + (selectedPage+1) + " does not exists.").withStyle(ChatFormatting.RED), false);
                 return 1;
             }
             page = selectedPage;
@@ -212,7 +215,7 @@ public final class BtellrawCommand {
         }
 
         // Separator
-        context.getSource().sendFeedback(() -> Text.literal("There are " + Config.tellraws.size() + " tellraws loaded.").formatted(Formatting.GREEN), false);
+        context.getSource().sendSuccess(() -> Component.literal("There are " + Config.tellraws.size() + " tellraws loaded.").withStyle(ChatFormatting.GREEN), false);
 
         int i = 0;
         for(String id : Config.tellraws.keySet().stream().sorted().toList()) {
@@ -225,61 +228,61 @@ public final class BtellrawCommand {
 
             String order = (i+1) + ". ";
 
-            MutableText finalText = Text.literal(order + id);
-            finalText.formatted(Formatting.YELLOW);
-            finalText.styled(style -> {
+            MutableComponent finalText = Component.literal(order + id);
+            finalText.withStyle(ChatFormatting.YELLOW);
+            finalText.withStyle(style -> {
                 style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw preview \"" + id + "\""));
-                style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Click to preview " + id).formatted(Formatting.GOLD)));
+                style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to preview " + id).withStyle(ChatFormatting.GOLD)));
                 return style;
             });
 
-            context.getSource().sendFeedback(() -> finalText, false);
+            context.getSource().sendSuccess(() -> finalText, false);
             i++;
         }
 
         int ordinalPage = page + 1;
 
-        MutableText leftArrow = Text.literal("←").formatted(Formatting.GOLD);
-        MutableText rightArrow = Text.literal("→").formatted(Formatting.GOLD);
-        MutableText pageText = Text.literal(" [ Page " + (ordinalPage) + "/" + pages + " ] ").formatted(Formatting.GOLD);
+        MutableComponent leftArrow = Component.literal("←").withStyle(ChatFormatting.GOLD);
+        MutableComponent rightArrow = Component.literal("→").withStyle(ChatFormatting.GOLD);
+        MutableComponent pageText = Component.literal(" [ Page " + (ordinalPage) + "/" + pages + " ] ").withStyle(ChatFormatting.GOLD);
 
-        leftArrow.styled(style -> {
+        leftArrow.withStyle(style -> {
             style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw list " + (ordinalPage - 1)));
-            style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Previous page").formatted(Formatting.YELLOW)));
+            style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal("Previous page").withStyle(ChatFormatting.YELLOW)));
             return style;
         });
-        rightArrow.styled(style -> {
+        rightArrow.withStyle(style -> {
             style = style.withClickEvent(new ClickEvent.RunCommand("/btellraw list " + (ordinalPage + 1)));
-            style = style.withHoverEvent(new HoverEvent.ShowText(Text.literal("Next page").formatted(Formatting.YELLOW)));
+            style = style.withHoverEvent(new HoverEvent.ShowText(Component.literal("Next page").withStyle(ChatFormatting.YELLOW)));
             return style;
         });
 
-        MutableText finalText = Text.literal("");
+        MutableComponent finalText = Component.literal("");
         if(page > 0) finalText.append(leftArrow);
         finalText.append(pageText);
         if(ordinalPage < pages) finalText.append(rightArrow);
 
-        context.getSource().sendFeedback(() -> finalText, false);
+        context.getSource().sendSuccess(() -> finalText, false);
         return 1;
     }
 
-    public static int sendTellraw(Collection<ServerPlayerEntity> players, Text msg, CommandContext<ServerCommandSource> context) {
-        Text finalText = Placeholders.parseText(msg, PlaceholderContext.of(context.getSource().getServer()));
+    public static int sendTellraw(Collection<ServerPlayer> players, Component msg, CommandContext<CommandSourceStack> context) {
+        Component finalText = Placeholders.parseText(msg, PlaceholderContext.of(context.getSource().getServer()));
 
-        for (ServerPlayerEntity player : players) {
-            player.sendMessage(finalText);
+        for (ServerPlayer player : players) {
+            player.sendSystemMessage(finalText);
         }
         return 1;
     }
 
-    public static int sendTellraw(String msg, CommandContext<ServerCommandSource> context, String[] placeholder) {
-        Collection<ServerPlayerEntity> playerList;
+    public static int sendTellraw(String msg, CommandContext<CommandSourceStack> context, String[] placeholder) {
+        Collection<ServerPlayer> playerList;
         try {
-            Box area = new Box(BlockPosArgumentType.getBlockPos(context, "pos1").toCenterPos(), BlockPosArgumentType.getBlockPos(context, "pos2").toCenterPos());
-            playerList = context.getSource().getWorld().getEntitiesByClass(ServerPlayerEntity.class, area, e -> true);
+            AABB area = new AABB(BlockPosArgument.getBlockPos(context, "pos1").getCenter(), BlockPosArgument.getBlockPos(context, "pos2").getCenter());
+            playerList = context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true);
         } catch (Exception e) {
             try {
-                playerList = EntityArgumentType.getPlayers(context, "players");
+                playerList = EntityArgument.getPlayers(context, "players");
             } catch (Exception f) {
                 playerList = Collections.singletonList(context.getSource().getPlayer());
             }
@@ -300,10 +303,10 @@ public final class BtellrawCommand {
             formattedString = tellrawMsg;
         }
 
-        Text tellrawText;
+        Component tellrawText;
         try {
             JsonElement jsonElement = JsonParser.parseString(formattedString);
-            tellrawText = TextCodecs.CODEC.parse(JsonOps.INSTANCE, jsonElement).resultOrPartial().orElseThrow();
+            tellrawText = ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, jsonElement).resultOrPartial().orElseThrow();
         } catch (JsonParseException | DecoderException ignored) {
             tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseText(formattedString, ParserContext.of());
         }
@@ -311,23 +314,23 @@ public final class BtellrawCommand {
         return sendTellraw(playerList, tellrawText, context);
     }
 
-    public static int sendTellraw(Text msg, CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Collection<ServerPlayerEntity> playerList;
+    public static int sendTellraw(Component msg, CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> playerList;
         try {
-            Box area = new Box(BlockPosArgumentType.getBlockPos(context, "pos1").toCenterPos(), BlockPosArgumentType.getBlockPos(context, "pos2").toCenterPos());
-            playerList = context.getSource().getWorld().getEntitiesByClass(ServerPlayerEntity.class, area, e -> true);
+            AABB area = new AABB(BlockPosArgument.getBlockPos(context, "pos1").getCenter(), BlockPosArgument.getBlockPos(context, "pos2").getCenter());
+            playerList = context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true);
         } catch (Exception e) {
-            playerList = EntityArgumentType.getPlayers(context, "players");
+            playerList = EntityArgument.getPlayers(context, "players");
         }
 
         return sendTellraw(playerList, msg, context);
     }
 
-    public static int addTellraw(CommandContext<ServerCommandSource> context, ArgumentType<?> type) {
+    public static int addTellraw(CommandContext<CommandSourceStack> context, ArgumentType<?> type) {
         String ID = StringArgumentType.getString(context, "id");
         String fullID = StringArgumentType.getString(context, "fileName") + "." + StringArgumentType.getString(context, "id");
         if(Config.tellraws.get(fullID) != null) {
-            context.getSource().sendFeedback(() -> Text.literal("Tellraw " + fullID + " already exists.").formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.literal("Tellraw " + fullID + " already exists.").withStyle(ChatFormatting.RED), false);
             return 1;
         }
 
@@ -336,20 +339,20 @@ public final class BtellrawCommand {
             Config.tellraws.put(fullID, tellrawObj);
             Config.saveConfig();
         } else {
-            TellrawEntry tellrawObj = new TellrawEntry(StringArgumentType.getString(context, "fileName"), TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, TextArgumentType.getTextArgument(context, "JSONText")).getOrThrow().toString(), fullID, ID);
+            TellrawEntry tellrawObj = new TellrawEntry(StringArgumentType.getString(context, "fileName"), ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, ComponentArgument.getRawComponent(context, "JSONText")).getOrThrow().toString(), fullID, ID);
             Config.tellraws.put(fullID, tellrawObj);
             Config.saveConfig();
         }
-        context.getSource().sendFeedback(() -> Text.literal("Tellraws added. Full id is: " + fullID).formatted(Formatting.GREEN), false);
+        context.getSource().sendSuccess(() -> Component.literal("Tellraws added. Full id is: " + fullID).withStyle(ChatFormatting.GREEN), false);
         return 1;
     }
 
-    public static int modifyTellraw(CommandContext<ServerCommandSource> context, ArgumentType<?> type) {
+    public static int modifyTellraw(CommandContext<CommandSourceStack> context, ArgumentType<?> type) {
         String ID = StringArgumentType.getString(context, "id");
         TellrawEntry oldEntry = Config.tellraws.get(ID);
 
         if(oldEntry == null) {
-            context.getSource().sendFeedback(() -> Text.literal("Cannot find tellraw with id " + ID).formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.literal("Cannot find tellraw with id " + ID).withStyle(ChatFormatting.RED), false);
             return 1;
         }
 
@@ -357,13 +360,13 @@ public final class BtellrawCommand {
         if(type instanceof StringArgumentType) {
             content = StringArgumentType.getString(context, "text");
         } else {
-            content = TextCodecs.CODEC.encodeStart(JsonOps.INSTANCE, TextArgumentType.getTextArgument(context, "JSONText")).getOrThrow().toString();
+            content = ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, ComponentArgument.getRawComponent(context, "JSONText")).getOrThrow().toString();
         }
 
         Config.tellraws.put(ID, new TellrawEntry(oldEntry.fileName(), content, oldEntry.fullID(), oldEntry.id()));
         Config.saveConfig();
 
-        context.getSource().sendFeedback(() -> Text.literal("Tellraw " + ID + " modified.").formatted(Formatting.GOLD), false);
+        context.getSource().sendSuccess(() -> Component.literal("Tellraw " + ID + " modified.").withStyle(ChatFormatting.GOLD), false);
         return 1;
     }
 }

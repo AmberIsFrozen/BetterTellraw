@@ -10,7 +10,7 @@
 - Send the tellraw to players within 2 positions (a box) easily.
 
 ## Usages
-Please see the [Wiki](https://github.com/Kenny-Hui/BetterTellraw/wiki) for details.
+Please see the [Wiki](https://github.com/AmberIsFrozen/BetterTellraw/wiki) for details.
 
 ## Bugs/Suggestion
 If you have any suggestions or bug report, don't hesitate to open an GitHub issue [here](https://github.com/Kenny-Hui/BetterTellraw/issues)!
