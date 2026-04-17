@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "$loom_version"
+	id 'net.fabricmc.fabric-loom' version "$loom_version"
 	id 'maven-publish'
 }
 
@@ -18,12 +18,11 @@ repositories {
 
 dependencies {
 	// To change the versions see the gradle.properties file
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_api_version}")
-	modImplementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}")
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation include("eu.pb4:placeholder-api:${project.placeholder_api_version}")
+	implementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}")
 }
 
 processResources {
@@ -36,7 +35,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
- 	it.options.release = 21
+ 	it.options.release = 25
 }
 
 java {

@@ -15,8 +15,9 @@ import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.ParserContext;
-import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.Placeholders;
+import eu.pb4.placeholders.api.ServerPlaceholderContext;
+import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.TagParser;
 import io.netty.handler.codec.DecoderException;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -267,7 +268,7 @@ public final class BtellrawCommand {
     }
 
     public static int sendTellraw(Collection<ServerPlayer> players, Component msg, CommandContext<CommandSourceStack> context) {
-        Component finalText = Placeholders.parseText(msg, PlaceholderContext.of(context.getSource().getServer()));
+        Component finalText = Placeholders.COMMON_PLACEHOLDER_PARSER.parseComponent(TextNode.convert(msg), ServerPlaceholderContext.of(context.getSource().getServer()).asParserContext());
 
         for (ServerPlayer player : players) {
             player.sendSystemMessage(finalText);
@@ -308,7 +309,7 @@ public final class BtellrawCommand {
             JsonElement jsonElement = JsonParser.parseString(formattedString);
             tellrawText = ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, jsonElement).resultOrPartial().orElseThrow();
         } catch (JsonParseException | DecoderException ignored) {
-            tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseText(formattedString, ParserContext.of());
+            tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseComponent(formattedString, ParserContext.of());
         }
 
         return sendTellraw(playerList, tellrawText, context);
