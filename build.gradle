@@ -22,7 +22,6 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	implementation include("eu.pb4:placeholder-api:${project.placeholder_api_version}")
-	implementation include("me.lucko:fabric-permissions-api:${project.fabric_permissions_api_version}")
 }
 
 processResources {

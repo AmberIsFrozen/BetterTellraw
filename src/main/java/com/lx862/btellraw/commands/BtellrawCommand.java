@@ -20,7 +20,7 @@ import eu.pb4.placeholders.api.ServerPlaceholderContext;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.TagParser;
 import io.netty.handler.codec.DecoderException;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -50,44 +50,44 @@ public final class BtellrawCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess) {
         LiteralCommandNode<CommandSourceStack> tellrawNode = Commands
                 .literal("btellraw")
-                .requires(Permissions.require("btw.main", PermissionLevel.ALL))
+                .requires(PermissionPredicates.require(CommandPermission.MAIN, PermissionLevel.ALL))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> reloadNode = Commands
                 .literal("reload")
-                .requires(Permissions.require("btw.reload", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.RELOAD, PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::reloadConfig)
                 .build();
 
         LiteralCommandNode<CommandSourceStack> sendNode = Commands
                 .literal("send")
-                .requires(Permissions.require("btw.send", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.SEND, PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> addNode = Commands
                 .literal("add")
-                .requires(Permissions.require("btw.add", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.ADD, PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> modifyNode = Commands
                 .literal("modify")
-                .requires(Permissions.require("btw.modify", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.MODIFY, PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> previewNode = Commands
                 .literal("preview")
-                .requires(Permissions.require("btw.preview", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.PREVIEW, PermissionLevel.GAMEMASTERS))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> listNode = Commands
                 .literal("list")
-                .requires(Permissions.require("btw.list", PermissionLevel.GAMEMASTERS))
+                .requires(PermissionPredicates.require(CommandPermission.LIST, PermissionLevel.GAMEMASTERS))
                 .executes(BtellrawCommand::listTellraws)
                 .build();
 
         LiteralCommandNode<CommandSourceStack> aboutNode = Commands
                 .literal("about")
-                .requires(Permissions.require("btw.about", PermissionLevel.ALL))
+                .requires(PermissionPredicates.require(CommandPermission.ABOUT, PermissionLevel.ALL))
                 .executes(BtellrawCommand::about)
                 .build();
 
