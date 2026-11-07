@@ -3,6 +3,7 @@ package com.lx862.btellraw.commands;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.lx862.btellraw.ScheduleManager;
 import com.lx862.btellraw.config.Config;
 import com.lx862.btellraw.data.TellrawEntry;
 import com.mojang.brigadier.CommandDispatcher;
@@ -42,8 +43,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public final class BtellrawCommand {
 
@@ -144,19 +147,26 @@ public final class BtellrawCommand {
 
         ArgumentCommandNode<CommandSourceStack, String> tellrawID = Commands
                 .argument("tellrawID", StringArgumentType.string())
-                .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, new String[]{}))
+                .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, new String[]{}, 0))
                 .suggests((commandContext, suggestionsBuilder) -> SharedSuggestionProvider.suggest(Config.tellraws.keySet(), suggestionsBuilder))
                 .build();
 
         ArgumentCommandNode<CommandSourceStack, Component> JSONTextNode = Commands
                 .argument("Text", ComponentArgument.textComponent(registryAccess))
-                .executes(context -> sendTellraw(ComponentArgument.getRawComponent(context, "Text"), context))
+                .executes(context -> sendTellraw(ComponentArgument.getRawComponent(context, "Text"), context, 0))
                 .build();
 
         ArgumentCommandNode<CommandSourceStack, String> placeholderNode = Commands
                 .argument("placeholders", StringArgumentType.string())
-                .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, StringArgumentType.getString(context, "placeholders").split(",")))
+                .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, StringArgumentType.getString(context, "placeholders").split(","), 0))
                 .build();
+
+        ArgumentCommandNode<CommandSourceStack, Integer> scheduleDelayNode = Commands
+                .argument("scheduleTick", IntegerArgumentType.integer(0))
+                .executes(context -> sendTellraw(StringArgumentType.getString(context, "tellrawID"), context, StringArgumentType.getString(context, "placeholders").split(","), IntegerArgumentType.getInteger(context, "scheduleTick")))
+                .build();
+
+        placeholderNode.addChild(scheduleDelayNode);
 
         dispatcher.getRoot().addChild(tellrawNode);
 
@@ -174,12 +184,14 @@ public final class BtellrawCommand {
                     entitiesNode.addChild(tellrawID);
                     entitiesNode.addChild(JSONTextNode);
                         tellrawID.addChild(placeholderNode);
+//                            tellrawID.addChild(scheduleDelayNode);
             sendNode.addChild(posNode);
                 posNode.addChild(pos1Node);
                     pos1Node.addChild(pos2Node);
                         pos2Node.addChild(tellrawID);
                         pos2Node.addChild(JSONTextNode);
                             tellrawID.addChild(placeholderNode);
+//                                tellrawID.addChild(scheduleDelayNode);
         tellrawNode.addChild(previewNode);
             previewNode.addChild(tellrawID);
         tellrawNode.addChild(listNode);
@@ -278,16 +290,16 @@ public final class BtellrawCommand {
         return 1;
     }
 
-    public static int sendTellraw(String msg, CommandContext<CommandSourceStack> context, String[] placeholder) {
-        Collection<ServerPlayer> playerList;
+    public static int sendTellraw(String msg, CommandContext<CommandSourceStack> context, String[] placeholder, int scheduleTick) {
+        final List<ServerPlayer> playerList = new ArrayList<>();
         try {
             AABB area = new AABB(new Vec3(BlockPosArgument.getBlockPos(context, "pos1")), new Vec3(BlockPosArgument.getBlockPos(context, "pos2")));
-            playerList = context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true);
+            playerList.addAll(context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true));
         } catch (Exception e) {
             try {
-                playerList = EntityArgument.getPlayers(context, "players");
+                playerList.addAll(EntityArgument.getPlayers(context, "players"));
             } catch (Exception f) {
-                playerList = Collections.singletonList(context.getSource().getPlayer());
+                playerList.addAll(Collections.singletonList(context.getSource().getPlayer()));
             }
         }
 
@@ -314,19 +326,31 @@ public final class BtellrawCommand {
             tellrawText = TagParser.QUICK_TEXT_WITH_STF.parseComponent(formattedString, ParserContext.of());
         }
 
-        return sendTellraw(playerList, tellrawText, context);
+        final Component tellrawTxt = tellrawText;
+
+        if(scheduleTick > 0) {
+            ScheduleManager.submit(() -> sendTellraw(playerList, tellrawTxt, context), scheduleTick);
+            return 1;
+        } else {
+            return sendTellraw(playerList, tellrawText, context);
+        }
     }
 
-    public static int sendTellraw(Component msg, CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        Collection<ServerPlayer> playerList;
+    public static int sendTellraw(Component msg, CommandContext<CommandSourceStack> context, int scheduleTick) throws CommandSyntaxException {
+        final List<ServerPlayer> playerList = new ArrayList<>();
         try {
             AABB area = new AABB(new Vec3(BlockPosArgument.getBlockPos(context, "pos1")), new Vec3(BlockPosArgument.getBlockPos(context, "pos2")));
-            playerList = context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true);
+            playerList.addAll(context.getSource().getLevel().getEntitiesOfClass(ServerPlayer.class, area, e -> true));
         } catch (Exception e) {
-            playerList = EntityArgument.getPlayers(context, "players");
+            playerList.addAll(EntityArgument.getPlayers(context, "players"));
         }
 
-        return sendTellraw(playerList, msg, context);
+        if(scheduleTick > 0) {
+            ScheduleManager.submit(() -> sendTellraw(playerList, msg, context), scheduleTick);
+            return 1;
+        } else {
+            return sendTellraw(playerList, msg, context);
+        }
     }
 
     public static int addTellraw(CommandContext<CommandSourceStack> context, ArgumentType<?> type) {
